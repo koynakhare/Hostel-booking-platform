@@ -2,6 +2,7 @@ package com.hostel_booking_platform.hostel_booking_platform.auth.service;
 
 import com.hostel_booking_platform.hostel_booking_platform.auth.dto.LoginRequest;
 import com.hostel_booking_platform.hostel_booking_platform.auth.dto.RegisterRequest;
+import com.hostel_booking_platform.hostel_booking_platform.user.dto.UserResponse;
 import com.hostel_booking_platform.hostel_booking_platform.user.entity.Role;
 import com.hostel_booking_platform.hostel_booking_platform.user.entity.User;
 import com.hostel_booking_platform.hostel_booking_platform.user.repository.UserRepository;
@@ -48,4 +49,12 @@ public class AuthServiceImpl implements AuthService {
 
         return user;
     }
+
+    @Override
+public UserResponse getLoggedInUser(String email) {
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+    return UserResponse.fromEntity(user);
+}
 }

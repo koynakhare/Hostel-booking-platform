@@ -10,6 +10,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.hostel_booking_platform.hostel_booking_platform.user.dto.UserResponse;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -52,4 +55,10 @@ public class AuthController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/profile")
+public ResponseEntity<UserResponse> getLoggedInUser(@AuthenticationPrincipal UserDetails userDetails) {
+    UserResponse response = authService.getLoggedInUser(userDetails.getUsername());
+    return ResponseEntity.ok(response);
+}
 }

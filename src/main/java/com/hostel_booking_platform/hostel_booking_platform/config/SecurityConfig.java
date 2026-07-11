@@ -1,5 +1,9 @@
 package com.hostel_booking_platform.hostel_booking_platform.config;
 
+import com.hostel_booking_platform.hostel_booking_platform.security.JwtAuthFilter;
+
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -8,27 +12,45 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+    private final JwtAuthFilter jwtAuthFilter;
 
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
 
-				.csrf(csrf -> csrf.disable())
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/api/auth/**").permitAll()
-						.anyRequest().authenticated());
-
-		return http.build();
-	}
+    @Bean
+		public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+				http
+								.csrf(csrf -> csrf.disable())
+								.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+								.authorizeHttpRequests(auth -> auth
+												.requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+												.anyRequest().authenticated())
+												.exceptionHandling(ex -> ex
+													.authenticationEntryPoint((request, response, authException) -> {
+															response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+															response.setContentType("application/json");
+															response.getWriter().write(
+																			"{\"timestamp\":\"" + java.time.LocalDateTime.now() + "\"," +
+																			"\"status\":401," +
+																			"\"error\":\"Unauthorized\"," +
+																			"\"message\":\"Authentication required. Please provide a valid token.\"}"
+															);
+													})
+									) 
+								.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+		
+				return http.build();
+		}
 }
