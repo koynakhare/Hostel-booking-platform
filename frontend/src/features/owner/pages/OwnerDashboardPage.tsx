@@ -55,7 +55,7 @@ export default function OwnerDashboardPage() {
           <h2 className="text-base font-bold text-text-on-dark">Quick Actions</h2>
           <div className="mt-4 flex flex-wrap gap-3">
             <Button onClick={() => navigate(OWNER_ROUTES.hostelNew)}>+ New Hostel</Button>
-            <Button variant="secondary" className="!text-text-on-dark !border-white/20" onClick={() => navigate(OWNER_ROUTES.hostels)}>
+            <Button variant="secondary" className="!text-text-on-dark !border-white/20 cursor-pointer bg-white/10 hover:!bg-white/20" onClick={() => navigate(OWNER_ROUTES.hostels)}>
               Manage Hostels
             </Button>
           </div>
