@@ -114,7 +114,6 @@ export default function OwnerLayout({ children }: { children: ReactNode }) {
         ctaLabel={isProfilePage ? undefined : "+ New Hostel"}
         ctaPath={isProfilePage ? undefined : OWNER_ROUTES.hostelNew}
         profilePath={isProfilePage ? undefined : OWNER_ROUTES.profile}
-        showLogout={isProfilePage}
         onLogout={handleLogout}
       />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">

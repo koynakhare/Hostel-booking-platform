@@ -17,7 +17,6 @@ interface SidebarProps {
   ctaLabel?: string;
   ctaPath?: string;
   profilePath?: string;
-  showLogout?: boolean;
   onLogout?: () => void;
 }
 
@@ -28,7 +27,6 @@ export default function Sidebar({
   ctaLabel,
   ctaPath,
   profilePath,
-  showLogout,
   onLogout,
 }: SidebarProps) {
   const navigate = useNavigate();
