@@ -49,15 +49,19 @@ export const hostelApi = baseApi.injectEndpoints({
     }),
     updateHostel: builder.mutation<
       Hostel,
-      { id: number; data: HostelFormData; images?: File[] }
+      { id: number; data: HostelFormData; images?: File[]; existingImages?: string[] }
     >({
-      query: ({ id, data, images }) => {
+      query: ({ id, data, images, existingImages }) => {
         const formData = new FormData();
         Object.entries(data).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
             formData.append(key, String(value));
           }
         });
+        if (existingImages) {
+          formData.append("syncImages", "true");
+          existingImages.forEach((url) => formData.append("existingImages", url));
+        }
         images?.forEach((file) => formData.append("images", file));
         return { url: `/hostels/${id}`, method: "PUT", body: formData };
       },

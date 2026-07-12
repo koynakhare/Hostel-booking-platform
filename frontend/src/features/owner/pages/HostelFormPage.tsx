@@ -33,6 +33,7 @@ export default function HostelFormPage() {
   const isEdit = !!id;
   const navigate = useNavigate();
   const [images, setImages] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
 
   const { data: hostel, isLoading: loadingHostel } = useGetHostelQuery(Number(id), { skip: !isEdit });
   const [createHostel, { isLoading: creating }] = useCreateHostelMutation();
@@ -64,13 +65,19 @@ export default function HostelFormPage() {
         totalRooms: hostel.totalRooms,
         amenities: hostel.amenities ?? "",
       });
+      setExistingImages(hostel.images ?? []);
     }
   }, [hostel, reset]);
 
   const onSubmit = async (data: FormData) => {
     try {
       if (isEdit) {
-        await updateHostel({ id: Number(id), data, images: images.length ? images : undefined }).unwrap();
+        await updateHostel({
+          id: Number(id),
+          data,
+          images: images.length ? images : undefined,
+          existingImages,
+        }).unwrap();
       } else {
         await createHostel({ data, images }).unwrap();
       }
@@ -98,7 +105,14 @@ export default function HostelFormPage() {
           <TextField name="totalRooms" control={control} label="Total Rooms" type="number" required />
         </div>
         <TextField name="amenities" control={control} label="Amenities" helperText="Comma-separated, e.g. WiFi, Laundry, Mess" />
-        <FileUpload files={images} onChange={setImages} />
+        <FileUpload
+          files={images}
+          onChange={setImages}
+          existingUrls={isEdit ? existingImages : undefined}
+          onRemoveExisting={(url) =>
+            setExistingImages((current) => current.filter((image) => image !== url))
+          }
+        />
         <div className="flex gap-3 pt-2">
           <Button type="submit" loading={creating || updating}>
             {isEdit ? "Update Hostel" : "Create Hostel"}

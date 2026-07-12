@@ -145,7 +145,13 @@ public class HostelServiceImpl implements HostelService {
 
   @Override
   @Transactional
-  public HostelResponse updateHostel(Long id, CreateHostelRequest request, MultipartFile[] images, String ownerEmail) {
+  public HostelResponse updateHostel(
+      Long id,
+      CreateHostelRequest request,
+      MultipartFile[] images,
+      List<String> existingImages,
+      boolean syncImages,
+      String ownerEmail) {
     Hostel hostel = hostelRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Hostel not found"));
 
@@ -166,13 +172,19 @@ public class HostelServiceImpl implements HostelService {
         hostel.setAmenities(request.getAmenities());
         hostel.setActive(true);
         hostel = hostelRepository.save(hostel);
+
+        List<String> updatedImages = syncImages
+            ? new ArrayList<>(existingImages == null ? List.of() : existingImages)
+            : new ArrayList<>(hostel.getImages());
+
         if (images != null && images.length > 0) {
         List<String> imageUrls = fileStorageService.storeHostelImages(hostel.getId(), images);
-        if (images != null && images.length > 0 && imageUrls.isEmpty()) {
+        if (imageUrls.isEmpty()) {
           throw new IllegalArgumentException("No valid image files received. Please re-select images in Postman.");
         }
-        hostel.setImages(new ArrayList<>(imageUrls));
+        updatedImages.addAll(imageUrls);
         }
+        hostel.setImages(updatedImages);
         hostel = hostelRepository.save(hostel);
 
         return HostelResponse.fromEntity(hostel);

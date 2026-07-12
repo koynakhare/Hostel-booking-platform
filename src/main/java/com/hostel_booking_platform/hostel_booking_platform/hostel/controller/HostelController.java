@@ -15,6 +15,8 @@ import com.hostel_booking_platform.hostel_booking_platform.hostel.dto.HostelResp
 import com.hostel_booking_platform.hostel_booking_platform.hostel.dto.PagedResponse;
 import com.hostel_booking_platform.hostel_booking_platform.hostel.service.HostelService;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/hostels")
@@ -48,8 +50,20 @@ public class HostelController {
   }
 
   @PutMapping(value="/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<HostelResponse> updateHostel(@PathVariable Long id, @Valid @ModelAttribute CreateHostelRequest request, @RequestParam(value = "images", required = false) MultipartFile[] images, @AuthenticationPrincipal UserDetails userDetails) {
-    HostelResponse response = hostelService.updateHostel(id, request, images, userDetails.getUsername());
+  public ResponseEntity<HostelResponse> updateHostel(
+      @PathVariable Long id,
+      @Valid @ModelAttribute CreateHostelRequest request,
+      @RequestParam(value = "images", required = false) MultipartFile[] images,
+      @RequestParam(value = "existingImages", required = false) List<String> existingImages,
+      @RequestParam(value = "syncImages", defaultValue = "false") boolean syncImages,
+      @AuthenticationPrincipal UserDetails userDetails) {
+    HostelResponse response = hostelService.updateHostel(
+        id,
+        request,
+        images,
+        existingImages,
+        syncImages,
+        userDetails.getUsername());
     return ResponseEntity.ok(response);
   }
 
