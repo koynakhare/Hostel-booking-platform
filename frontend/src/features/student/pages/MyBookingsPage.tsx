@@ -1,16 +1,29 @@
 import { useState } from "react";
 import { useGetMyBookingsQuery, useCancelBookingMutation } from "@/api/bookingApi";
+import { useOnlinePayment } from "@/features/student/hooks/useOnlinePayment";
 import Table, { type Column } from "@/components/ui/Table";
 import Badge, { statusToBadgeVariant } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { formatCurrency, formatDate } from "@/utils/formatters";
+import { PAYMENT_METHODS } from "@/utils/constants";
 import type { Booking } from "@/types/booking";
 
 export default function MyBookingsPage() {
   const { data: bookings = [], isLoading } = useGetMyBookingsQuery();
   const [cancelBooking, { isLoading: cancelling }] = useCancelBookingMutation();
+  const { payForBooking, isPaying } = useOnlinePayment();
   const [cancelId, setCancelId] = useState<number | null>(null);
+  const [payingId, setPayingId] = useState<number | null>(null);
+
+  const handlePay = async (booking: Booking) => {
+    setPayingId(booking.id);
+    try {
+      await payForBooking(booking.id, booking.paymentMethod, booking.hostelName);
+    } catch { /* handled */ } finally {
+      setPayingId(null);
+    }
+  };
 
   const columns: Column<Booking>[] = [
     { key: "hostelName", label: "Hostel" },
@@ -38,12 +51,30 @@ export default function MyBookingsPage() {
     {
       key: "id",
       label: "Actions",
-      render: (r) =>
-        r.status !== "CANCELLED" ? (
-          <Button size="sm" variant="danger" onClick={() => setCancelId(r.id)}>
-            Cancel
-          </Button>
-        ) : null,
+      render: (r) => {
+        const canPay =
+          r.status === "PENDING"
+          && (r.paymentMethod === PAYMENT_METHODS.RAZORPAY || r.paymentMethod === PAYMENT_METHODS.STRIPE);
+
+        return (
+          <div className="flex gap-2">
+            {canPay && (
+              <Button
+                size="sm"
+                loading={isPaying && payingId === r.id}
+                onClick={() => handlePay(r)}
+              >
+                Pay Now
+              </Button>
+            )}
+            {r.status !== "CANCELLED" && (
+              <Button size="sm" variant="danger" onClick={() => setCancelId(r.id)}>
+                Cancel
+              </Button>
+            )}
+          </div>
+        );
+      },
     },
   ];
 

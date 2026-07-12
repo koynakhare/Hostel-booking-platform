@@ -134,13 +134,13 @@ public class BookingServiceImpl implements BookingService {
     payment.setPaymentMethod(request.getPaymentMethod());
     payment.setStatus(PaymentStatus.PENDING);
 
-    if (request.getPaymentMethod() == PaymentMethod.RAZORPAY
-        || request.getPaymentMethod() == PaymentMethod.STRIPE) {
-      payment.setGatewayOrderId("order_" + savedBooking.getId() + "_" + System.currentTimeMillis());
-    }
-
     Payment savedPayment = paymentRepository.save(payment);
     roomLockRepository.delete(lock);
+
+    if (request.getPaymentMethod() == PaymentMethod.CASH_ON_ARRIVAL) {
+      savedBooking.setStatus(BookingStatus.CONFIRMED);
+      bookingRepository.save(savedBooking);
+    }
 
     BookingResponse response = BookingResponse.fromEntity(savedBooking);
     response.setGatewayOrderId(savedPayment.getGatewayOrderId());

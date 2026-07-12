@@ -1,100 +1,62 @@
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { createResolver } from "@/utils/form";
-import { z } from "zod";
-import Button from "@/components/ui/Button";
-import TextField from "@/components/ui/TextField";
 import Card from "@/components/ui/Card";
-import { showToast } from "@/features/toast/toastSlice";
-import { useAppDispatch } from "@/app/hooks";
-import { PAYMENT_SETTINGS_KEY, PAYMENT_METHODS } from "@/utils/constants";
-
-const schema = z.object({
-  method: z.enum(["RAZORPAY", "STRIPE", "CASH_ON_ARRIVAL"]),
-  razorpayKeyId: z.string().optional(),
-  razorpayKeySecret: z.string().optional(),
-  stripePublishableKey: z.string().optional(),
-  stripeSecretKey: z.string().optional(),
-});
-
-type FormData = z.infer<typeof schema>;
+import { useGetPaymentConfigQuery } from "@/api/paymentApi";
+import Loader from "@/components/ui/Loader";
 
 export default function PaymentSettingsPage() {
-  const dispatch = useAppDispatch();
-  const [saved, setSaved] = useState<FormData | null>(null);
+  const { data: config, isLoading } = useGetPaymentConfigQuery();
 
-  const { control, handleSubmit, watch, reset, setValue } = useForm<FormData>({
-    resolver: createResolver(schema),
-    defaultValues: { method: "RAZORPAY" },
-  });
-
-  const method = watch("method");
-
-  useEffect(() => {
-    const raw = localStorage.getItem(PAYMENT_SETTINGS_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as FormData;
-      reset(parsed);
-      setSaved(parsed);
-    }
-  }, [reset]);
-
-  const onSubmit = (data: FormData) => {
-    localStorage.setItem(PAYMENT_SETTINGS_KEY, JSON.stringify(data));
-    setSaved(data);
-    dispatch(showToast({ message: "Payment settings saved!", type: "success" }));
-  };
+  if (isLoading) return <Loader label="Loading payment config..." />;
 
   return (
     <Card className="max-w-lg">
       <h2 className="mb-2 text-lg font-bold text-text-primary">Payment Gateway</h2>
       <p className="mb-6 text-sm text-text-muted">
-        Choose how students pay for bookings. Settings are saved locally until backend payment config is available.
+        Payment gateways are configured on the server via environment variables.
+        Students will only see enabled methods at checkout.
       </p>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-text-primary">Payment Method</p>
-          {Object.entries(PAYMENT_METHODS).map(([key, value]) => (
-            <label key={key} className="flex cursor-pointer items-center gap-3 rounded-lg border border-border-subtle p-3 hover:bg-bg-page">
-              <input
-                type="radio"
-                value={value}
-                checked={method === value}
-                onChange={() => setValue("method", value as FormData["method"])}
-                className="text-accent"
-              />
-              <span className="text-sm text-text-primary">{key.replace("_", " ")}</span>
-            </label>
-          ))}
+      <div className="space-y-4 text-sm">
+        <div className="rounded-lg border border-border-subtle p-4">
+          <p className="font-medium text-text-primary">Razorpay</p>
+          <p className="mt-1 text-text-muted">
+            Status: {config?.razorpayEnabled ? "Enabled" : "Not configured"}
+          </p>
+          {config?.razorpayEnabled && (
+            <p className="mt-1 font-mono text-xs text-text-muted">
+              Key ID: {config.razorpayKeyId}
+            </p>
+          )}
         </div>
 
-        {method === PAYMENT_METHODS.RAZORPAY && (
-          <>
-            <TextField name="razorpayKeyId" control={control} label="Razorpay Key ID" />
-            <TextField name="razorpayKeySecret" control={control} label="Razorpay Key Secret" type="password" />
-          </>
-        )}
+        <div className="rounded-lg border border-border-subtle p-4">
+          <p className="font-medium text-text-primary">Stripe</p>
+          <p className="mt-1 text-text-muted">
+            Status: {config?.stripeEnabled ? "Enabled" : "Not configured"}
+          </p>
+          {config?.stripeEnabled && (
+            <p className="mt-1 font-mono text-xs text-text-muted">
+              Publishable key: {config.stripePublishableKey.slice(0, 12)}...
+            </p>
+          )}
+        </div>
 
-        {method === PAYMENT_METHODS.STRIPE && (
-          <>
-            <TextField name="stripePublishableKey" control={control} label="Stripe Publishable Key" />
-            <TextField name="stripeSecretKey" control={control} label="Stripe Secret Key" type="password" />
-          </>
-        )}
+        <div className="rounded-lg border border-border-subtle p-4">
+          <p className="font-medium text-text-primary">Cash on Arrival</p>
+          <p className="mt-1 text-text-muted">Always available for students.</p>
+        </div>
 
-        {method === PAYMENT_METHODS.CASH_ON_ARRIVAL && (
-          <p className="text-sm text-text-muted">Students will pay cash when they arrive at the hostel.</p>
-        )}
-
-        <Button type="submit">Save Settings</Button>
-      </form>
-
-      {saved && (
-        <p className="mt-4 text-xs text-text-muted">
-          Current: {saved.method.replace("_", " ")}
-        </p>
-      )}
+        <div className="rounded-lg bg-bg-page p-4 text-xs text-text-muted">
+          <p className="font-medium text-text-primary">Server setup</p>
+          <p className="mt-2">Set these environment variables on the backend:</p>
+          <ul className="mt-2 list-inside list-disc space-y-1 font-mono">
+            <li>RAZORPAY_KEY_ID</li>
+            <li>RAZORPAY_KEY_SECRET</li>
+            <li>STRIPE_PUBLISHABLE_KEY</li>
+            <li>STRIPE_SECRET_KEY</li>
+            <li>FRONTEND_URL (e.g. http://localhost:5173)</li>
+          </ul>
+        </div>
+      </div>
     </Card>
   );
 }

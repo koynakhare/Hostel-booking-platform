@@ -15,6 +15,7 @@ import BrowseHostelsPage from "@/features/student/pages/BrowseHostelsPage";
 import HostelDetailsPage from "@/features/student/pages/HostelDetailsPage";
 import BookingCheckoutPage from "@/features/student/pages/BookingCheckoutPage";
 import MyBookingsPage from "@/features/student/pages/MyBookingsPage";
+import PaymentSuccessPage from "@/features/student/pages/PaymentSuccessPage";
 import { OWNER_ROUTES, ROLES, STUDENT_ROUTES } from "@/utils/constants";
 
 export type LayoutType = "public" | "owner" | "student";
@@ -92,6 +93,12 @@ export const routeConfig: RouteConfig[] = [
   {
     path: STUDENT_ROUTES.myBookings,
     element: <MyBookingsPage />,
+    layout: "student",
+    roles: [ROLES.STUDENT],
+  },
+  {
+    path: STUDENT_ROUTES.paymentSuccess,
+    element: <PaymentSuccessPage />,
     layout: "student",
     roles: [ROLES.STUDENT],
   },

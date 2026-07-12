@@ -43,6 +43,7 @@ public class SecurityConfig {
 								.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 								.authorizeHttpRequests(auth -> auth
 												.requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+												.requestMatchers("/api/payments/config").permitAll()
 												.requestMatchers("/uploads/hostels/**").permitAll()
 												// .requestMatchers("/api/hostels/**").permitAll()
 												.anyRequest().authenticated())

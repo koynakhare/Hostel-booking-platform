@@ -26,7 +26,7 @@ export const bookingApi = baseApi.injectEndpoints({
         body,
       }),
       invalidatesTags: ["Booking", ...roomAvailabilityTags],
-      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
           dispatch(
@@ -35,7 +35,9 @@ export const bookingApi = baseApi.injectEndpoints({
               { type: "Room", id: `sheet-${data.hostelId}` },
             ]),
           );
-          dispatch(showToast({ message: "Booking confirmed!", type: "success" }));
+          if (arg.paymentMethod === "CASH_ON_ARRIVAL") {
+            dispatch(showToast({ message: "Booking confirmed! Pay cash on arrival.", type: "success" }));
+          }
         } catch { /* handled */ }
       },
     }),

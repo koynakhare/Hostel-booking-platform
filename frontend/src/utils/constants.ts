@@ -59,4 +59,5 @@ export const STUDENT_ROUTES = {
   details: "/student/hostels/:id",
   checkout: "/student/checkout/:hostelId",
   myBookings: "/student/bookings",
+  paymentSuccess: "/student/payment/success",
 } as const;
