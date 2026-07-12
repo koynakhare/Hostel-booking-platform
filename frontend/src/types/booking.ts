@@ -40,6 +40,7 @@ export interface Booking {
   hostelName: string;
   userId: number;
   userEmail: string;
+  userFullName?: string;
   checkIn: string;
   checkOut: string;
   status: BookingStatus;

@@ -29,3 +29,10 @@ export interface RegisterRequest {
   phoneNumber: string;
   role: Role;
 }
+
+export interface UpdateProfileRequest {
+  fullName: string;
+  phoneNumber: string;
+  currentPassword?: string;
+  newPassword?: string;
+}

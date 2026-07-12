@@ -11,6 +11,7 @@ export interface Hostel {
   images: string[];
   ownerId: number;
   ownerName?: string;
+  ownerPhone?: string;
   active: boolean;
   createdAt?: string;
   updatedAt?: string;

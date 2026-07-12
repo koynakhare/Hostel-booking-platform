@@ -69,6 +69,14 @@
     background-color: var(--color-bg-page);
     color: var(--color-text-primary);
   }
+
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
 }
 
 /* ── Reusable utility classes ── */

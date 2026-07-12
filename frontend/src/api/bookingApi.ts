@@ -55,6 +55,13 @@ export const bookingApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Booking"],
     }),
+    getOwnerBookings: builder.query<PagedResponse<Booking>, MyBookingsParams | void>({
+      query: (params) => ({
+        url: "/bookings/owner",
+        params: params ?? {},
+      }),
+      providesTags: ["Booking"],
+    }),
     getBooking: builder.query<Booking, number>({
       query: (id) => `/bookings/${id}`,
       providesTags: (_r, _e, id) => [{ type: "Booking", id }],
@@ -90,6 +97,7 @@ export const {
   useLockRoomMutation,
   useCreateBookingMutation,
   useGetMyBookingsQuery,
+  useGetOwnerBookingsQuery,
   useGetBookingQuery,
   useCancelBookingMutation,
   useUpdatePaymentMethodMutation,

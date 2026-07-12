@@ -6,7 +6,7 @@ import SeatMap from "@/features/student/components/SeatMap";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Loader from "@/components/ui/Loader";
-import HostelImage from "@/components/ui/HostelImage";
+import ImageCarousel from "@/components/ui/ImageCarousel";
 import RoomFeatureBadges from "@/components/ui/RoomFeatureBadges";
 import {
   addDays,
@@ -152,26 +152,11 @@ export default function HostelDetailsPage() {
 
       {/* Gallery + info */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="space-y-3">
-          {hostel?.images?.length ? (
-            <div className="grid grid-cols-2 gap-2">
-              {hostel.images.map((img, i) => (
-                <HostelImage
-                  key={i}
-                  src={img}
-                  alt={hostel.name}
-                  className={`rounded-lg object-cover ${i === 0 ? "col-span-2 h-56 w-full" : "h-28 w-full"}`}
-                />
-              ))}
-            </div>
-          ) : (
-            <HostelImage
-              src={null}
-              alt={hostel?.name ?? "Hostel"}
-              className="card-base h-56 w-full rounded-lg object-cover"
-            />
-          )}
-        </div>
+        <ImageCarousel
+          images={hostel?.images ?? []}
+          alt={hostel?.name ?? "Hostel"}
+          imageClassName="h-80 w-full object-cover sm:h-96"
+        />
 
         <Card>
           <h2 className="text-xl font-bold text-text-primary">{hostel?.name}</h2>
@@ -183,6 +168,14 @@ export default function HostelDetailsPage() {
             </p>
           )}
           <p className="mt-2 text-sm text-text-muted">{hostel?.address}</p>
+          {hostel?.ownerPhone && (
+            <p className="mt-3 text-sm text-text-muted">
+              <span className="font-medium text-text-primary">Contact:</span>{" "}
+              <a href={`tel:${hostel.ownerPhone}`} className="text-accent hover:underline">
+                {hostel.ownerPhone}
+              </a>
+            </p>
+          )}
         </Card>
       </div>
 

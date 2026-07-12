@@ -63,7 +63,7 @@ export default function ManageHostelsPage() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button onClick={() => navigate(OWNER_ROUTES.hostelNew)}>+ Add Hostel</Button>
+        <Button className="cursor-pointer" onClick={() => navigate(OWNER_ROUTES.hostelNew)}>+ Add Hostel</Button>
       </div>
       <Table columns={columns} data={myHostels} loading={isLoading} emptyMessage="No hostels yet. Create your first hostel!" />
       <ConfirmDialog

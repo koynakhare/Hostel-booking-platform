@@ -11,6 +11,7 @@ import HostelFormPage from "@/features/owner/pages/HostelFormPage";
 import ManageRoomsPage from "@/features/owner/pages/ManageRoomsPage";
 import OwnerBookingsPage from "@/features/owner/pages/OwnerBookingsPage";
 import PaymentSettingsPage from "@/features/owner/pages/PaymentSettingsPage";
+import ProfilePage from "@/features/profile/ProfilePage";
 import BrowseHostelsPage from "@/features/student/pages/BrowseHostelsPage";
 import HostelDetailsPage from "@/features/student/pages/HostelDetailsPage";
 import BookingCheckoutPage from "@/features/student/pages/BookingCheckoutPage";
@@ -73,6 +74,12 @@ export const routeConfig: RouteConfig[] = [
     roles: [ROLES.OWNER],
   },
   {
+    path: OWNER_ROUTES.profile,
+    element: <ProfilePage />,
+    layout: "owner",
+    roles: [ROLES.OWNER],
+  },
+  {
     path: STUDENT_ROUTES.browse,
     element: <BrowseHostelsPage />,
     layout: "student",
@@ -99,6 +106,12 @@ export const routeConfig: RouteConfig[] = [
   {
     path: STUDENT_ROUTES.paymentSuccess,
     element: <PaymentSuccessPage />,
+    layout: "student",
+    roles: [ROLES.STUDENT],
+  },
+  {
+    path: STUDENT_ROUTES.profile,
+    element: <ProfilePage />,
     layout: "student",
     roles: [ROLES.STUDENT],
   },

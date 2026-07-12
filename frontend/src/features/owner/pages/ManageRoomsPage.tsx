@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { createResolver, zNum } from "@/utils/form";
+import { createResolver, zInt, zNum } from "@/utils/form";
 import { useParams } from "react-router-dom";
 import {
   useGetRoomsQuery,
@@ -28,9 +28,9 @@ const schema = z.object({
   roomType: z.enum(ROOM_TYPES),
   pricePerMonth: zNum(1),
   capacity: zNum(1),
-  floorNumber: zNum(0),
-  rowPosition: zNum(1),
-  colPosition: zNum(1),
+  floorNumber: zInt(0, "Floor must be 0 or greater"),
+  rowPosition: zInt(1, "Grid row must be at least 1"),
+  colPosition: zInt(1, "Grid column must be at least 1"),
   hasWindow: z.boolean(),
   hasBalcony: z.boolean(),
 });
@@ -114,9 +114,9 @@ export default function ManageRoomsPage() {
       roomType: room.roomType,
       pricePerMonth: room.pricePerMonth,
       capacity: room.capacity,
-      floorNumber: room.floorNumber,
-      rowPosition: room.rowPosition,
-      colPosition: room.colPosition,
+      floorNumber: Math.trunc(room.floorNumber),
+      rowPosition: Math.trunc(room.rowPosition),
+      colPosition: Math.trunc(room.colPosition),
       hasWindow: room.hasWindow,
       hasBalcony: room.hasBalcony,
     });
@@ -216,10 +216,43 @@ export default function ManageRoomsPage() {
             <TextField name="pricePerMonth" control={control} label="Rent/Month (₹)" type="number" required />
             <TextField name="capacity" control={control} label="Seat Count" type="number" required />
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            <TextField name="floorNumber" control={control} label="Floor" type="number" required />
-            <TextField name="rowPosition" control={control} label="Row" type="number" required />
-            <TextField name="colPosition" control={control} label="Col" type="number" required />
+          <div>
+            <p className="mb-2 text-sm font-medium text-text-primary">Seat map position</p>
+            <p className="mb-3 text-xs text-text-muted">
+              Place this room on the floor plan shown to students. Use whole numbers only.
+            </p>
+            <div className="grid grid-cols-3 gap-4">
+              <TextField
+                name="floorNumber"
+                control={control}
+                label="Floor Number"
+                type="number"
+                required
+                integerOnly
+                min="0"
+                helperText="0 = ground floor"
+              />
+              <TextField
+                name="rowPosition"
+                control={control}
+                label="Grid Row"
+                type="number"
+                required
+                integerOnly
+                min="1"
+                helperText="Top to bottom"
+              />
+              <TextField
+                name="colPosition"
+                control={control}
+                label="Grid Column"
+                type="number"
+                required
+                integerOnly
+                min="1"
+                helperText="Left to right"
+              />
+            </div>
           </div>
           <div className="flex gap-6">
             <Checkbox name="hasWindow" control={control} label="Has Window" />

@@ -202,6 +202,35 @@ public class BookingServiceImpl implements BookingService {
   }
 
   @Override
+  @Transactional(readOnly = true)
+  public PagedResponse<BookingResponse> getOwnerBookings(String ownerEmail, Integer page, Integer limit) {
+    User owner = getOwnerOrThrow(ownerEmail);
+
+    boolean unpaged = page == null && limit == null;
+    Pageable pageable = unpaged
+        ? Pageable.unpaged()
+        : PageRequest.of(
+            (page == null || page < 1) ? 0 : page - 1,
+            (limit == null || limit < 1) ? 10 : limit);
+
+    Page<Booking> bookingPage = bookingRepository.findByOwnerIdOrderByCreatedAtDesc(owner.getId(), pageable);
+
+    List<BookingResponse> content = bookingPage.getContent().stream()
+        .map(this::toResponse)
+        .collect(Collectors.toList());
+
+    Integer responsePage = unpaged ? null : ((page == null || page < 1) ? 1 : page);
+    Integer responseLimit = unpaged ? null : ((limit == null || limit < 1) ? 10 : limit);
+
+    return new PagedResponse<>(
+        content,
+        responsePage,
+        responseLimit,
+        bookingPage.getTotalElements(),
+        bookingPage.getTotalPages());
+  }
+
+  @Override
   @Transactional
   public BookingResponse updatePaymentMethod(
       Long bookingId, UpdatePaymentMethodRequest request, String userEmail) {
@@ -288,6 +317,11 @@ public class BookingServiceImpl implements BookingService {
     return response;
   }
 
+  private User getUserOrThrow(String userEmail) {
+    return userRepository.findByEmail(userEmail)
+        .orElseThrow(() -> new IllegalArgumentException("User not found"));
+  }
+
   private User getStudentOrThrow(String userEmail) {
     User user = getUserOrThrow(userEmail);
     if (user.getRole() != Role.STUDENT) {
@@ -296,9 +330,12 @@ public class BookingServiceImpl implements BookingService {
     return user;
   }
 
-  private User getUserOrThrow(String userEmail) {
-    return userRepository.findByEmail(userEmail)
-        .orElseThrow(() -> new IllegalArgumentException("User not found"));
+  private User getOwnerOrThrow(String userEmail) {
+    User user = getUserOrThrow(userEmail);
+    if (user.getRole() != Role.OWNER) {
+      throw new IllegalArgumentException("Only owners can access this resource");
+    }
+    return user;
   }
 
   private Room getActiveRoomOrThrow(Long roomId) {

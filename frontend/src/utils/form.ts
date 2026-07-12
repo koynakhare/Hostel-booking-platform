@@ -14,3 +14,14 @@ export const zNum = (min = 0, message?: string) =>
     .union([z.number(), z.string()])
     .transform((v) => (v === "" ? NaN : Number(v)))
     .pipe(z.number().min(min, message ?? `Must be at least ${min}`));
+
+export const zInt = (min = 0, message?: string) =>
+  z
+    .union([z.number(), z.string()])
+    .transform((v) => (v === "" ? NaN : Number(v)))
+    .pipe(
+      z
+        .number()
+        .min(min, message ?? `Must be at least ${min}`)
+        .int("Must be a whole number"),
+    );

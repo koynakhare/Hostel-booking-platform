@@ -22,6 +22,8 @@ public interface BookingService {
 
   PagedResponse<BookingResponse> getMyBookings(String userEmail, Integer page, Integer limit);
 
+  PagedResponse<BookingResponse> getOwnerBookings(String ownerEmail, Integer page, Integer limit);
+
   BookingResponse updatePaymentMethod(Long bookingId, UpdatePaymentMethodRequest request, String userEmail);
 
   void cancelBooking(Long bookingId, String userEmail);

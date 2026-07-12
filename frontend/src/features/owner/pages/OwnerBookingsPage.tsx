@@ -1,92 +1,78 @@
-import { useMemo, useState } from "react";
-import { useGetHostelsQuery } from "@/api/hostelApi";
-import { useGetRoomSheetQuery } from "@/api/roomApi";
-import { useAppSelector } from "@/app/hooks";
-import { selectUser } from "@/features/auth/authSlice";
+import { useState } from "react";
+import { useGetOwnerBookingsQuery } from "@/api/bookingApi";
 import Table, { type Column } from "@/components/ui/Table";
 import Badge, { statusToBadgeVariant } from "@/components/ui/Badge";
-import { formatCurrency } from "@/utils/formatters";
-import type { RoomSheetItem } from "@/types/room";
+import { formatCurrency, formatDate } from "@/utils/formatters";
+import { PAYMENT_METHOD_SHORT, paymentStatusLabel, paymentStatusVariant } from "@/utils/paymentLabels";
+import type { Booking } from "@/types/booking";
 
-interface BookingRow {
-  id: string;
-  hostelName: string;
-  roomNumber: string;
-  roomType: string;
-  status: string;
-  pricePerMonth: number;
-}
+const PAGE_SIZE = 10;
 
 export default function OwnerBookingsPage() {
-  const user = useAppSelector(selectUser);
-  const { data: hostelsData } = useGetHostelsQuery({});
-  const [selectedHostelId, setSelectedHostelId] = useState<number | "">("");
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useGetOwnerBookingsQuery({ page, limit: PAGE_SIZE });
 
-  const myHostels = useMemo(
-    () => hostelsData?.content.filter((h) => h.ownerId === user?.id) ?? [],
-    [hostelsData, user?.id],
-  );
+  const bookings = data?.content ?? [];
+  const totalPages = data?.totalPages ?? 1;
 
-  const today = new Date().toISOString().split("T")[0];
-  const threeMonths = new Date(Date.now() + 90 * 86400000).toISOString().split("T")[0];
-
-  const hostelId = selectedHostelId || myHostels[0]?.id;
-  const { data: sheet, isLoading } = useGetRoomSheetQuery(
-    { hostelId: hostelId!, checkIn: today, checkOut: threeMonths },
-    { skip: !hostelId },
-  );
-
-  const bookedRooms: BookingRow[] = useMemo(() => {
-    if (!sheet) return [];
-    return sheet.floors.flatMap((floor) =>
-      floor.rooms
-        .filter((r) => r.status === "BOOKED" || r.status === "LOCKED")
-        .map((r: RoomSheetItem) => ({
-          id: `${sheet.hostelId}-${r.id}`,
-          hostelName: sheet.hostelName,
-          roomNumber: r.roomNumber,
-          roomType: r.roomType,
-          status: r.status,
-          pricePerMonth: r.pricePerMonth,
-        })),
-    );
-  }, [sheet]);
-
-  const columns: Column<BookingRow>[] = [
+  const columns: Column<Booking>[] = [
     { key: "hostelName", label: "Hostel" },
     { key: "roomNumber", label: "Room" },
-    { key: "roomType", label: "Type" },
+    {
+      key: "userFullName",
+      label: "Student",
+      render: (r) => r.userFullName ?? r.userEmail,
+    },
+    { key: "userEmail", label: "Email" },
+    {
+      key: "checkIn",
+      label: "Check-in",
+      render: (r) => formatDate(r.checkIn),
+    },
+    {
+      key: "checkOut",
+      label: "Check-out",
+      render: (r) => formatDate(r.checkOut),
+    },
     {
       key: "status",
       label: "Status",
       render: (r) => <Badge label={r.status} variant={statusToBadgeVariant(r.status)} />,
     },
     {
-      key: "pricePerMonth",
-      label: "Rent/Month",
-      render: (r) => formatCurrency(r.pricePerMonth),
+      key: "paymentMethod",
+      label: "Payment",
+      render: (r) => PAYMENT_METHOD_SHORT[r.paymentMethod],
+    },
+    {
+      key: "paymentStatus",
+      label: "Payment Status",
+      render: (r) => (
+        <Badge
+          label={paymentStatusLabel(r.paymentStatus, r.paymentMethod, r.status)}
+          variant={paymentStatusVariant(r.paymentStatus, r.paymentMethod, r.status)}
+        />
+      ),
+    },
+    {
+      key: "totalAmount",
+      label: "Amount",
+      render: (r) => formatCurrency(r.totalAmount),
     },
   ];
 
   return (
     <div className="space-y-4">
-      <div className="max-w-xs">
-        <label className="mb-1.5 block text-sm font-medium text-text-primary">Filter by Hostel</label>
-        <select
-          value={selectedHostelId || myHostels[0]?.id || ""}
-          onChange={(e) => setSelectedHostelId(Number(e.target.value))}
-          className="w-full rounded-button border border-border-subtle bg-card-bg px-3 py-2.5 text-sm"
-        >
-          {myHostels.map((h) => (
-            <option key={h.id} value={h.id}>{h.name}</option>
-          ))}
-        </select>
-      </div>
       <Table
         columns={columns}
-        data={bookedRooms}
+        data={bookings}
         loading={isLoading}
-        emptyMessage="No booked or locked rooms for this hostel."
+        emptyMessage="No bookings yet. Students can book rooms from the student panel."
+        pagination={{
+          page,
+          totalPages,
+          onPageChange: setPage,
+        }}
       />
     </div>
   );

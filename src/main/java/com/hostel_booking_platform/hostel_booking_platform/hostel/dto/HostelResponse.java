@@ -21,6 +21,7 @@ public class HostelResponse {
   private List<String> images;
   private Long ownerId;
   private String ownerName;
+  private String ownerPhone;
   private boolean active;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
@@ -42,6 +43,7 @@ public class HostelResponse {
     response.setImages(new ArrayList<>(hostel.getImages()));
     response.setOwnerId(hostel.getOwner().getId());
     response.setOwnerName(hostel.getOwner().getFullName());
+    response.setOwnerPhone(hostel.getOwner().getPhoneNumber());
     response.setActive(hostel.isActive());
     response.setCreatedAt(hostel.getCreatedAt());
     response.setUpdatedAt(hostel.getUpdatedAt());
@@ -142,6 +144,14 @@ public class HostelResponse {
 
   public void setOwnerName(String ownerName) {
     this.ownerName = ownerName;
+  }
+
+  public String getOwnerPhone() {
+    return ownerPhone;
+  }
+
+  public void setOwnerPhone(String ownerPhone) {
+    this.ownerPhone = ownerPhone;
   }
 
   public boolean isActive() {

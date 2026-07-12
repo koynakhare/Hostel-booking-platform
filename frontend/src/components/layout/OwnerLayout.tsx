@@ -1,7 +1,10 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
 import Sidebar, { NavIcon } from "@/components/layout/Sidebar";
 import Topbar from "@/components/layout/Topbar";
+import { useAppDispatch } from "@/app/hooks";
+import { logout } from "@/features/auth/authSlice";
+import { showToast } from "@/features/toast/toastSlice";
 import { OWNER_ROUTES } from "@/utils/constants";
 
 const ownerNav = [
@@ -51,6 +54,18 @@ const ownerNav = [
   },
 ];
 
+const profileNavItem = {
+  path: OWNER_ROUTES.profile,
+  label: "Profile",
+  icon: (
+    <NavIcon>
+      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+    </NavIcon>
+  ),
+};
+
 const pageMeta: Record<string, { title: string; subtitle: string }> = {
   [OWNER_ROUTES.dashboard]: {
     title: "Dashboard",
@@ -62,32 +77,53 @@ const pageMeta: Record<string, { title: string; subtitle: string }> = {
   },
   [OWNER_ROUTES.bookings]: {
     title: "Bookings",
-    subtitle: "View room-wise booking status across your hostels",
+    subtitle: "View bookings across your hostels",
   },
   [OWNER_ROUTES.payments]: {
     title: "Payment Settings",
     subtitle: "Configure Razorpay, Stripe, or cash payment options",
   },
+  [OWNER_ROUTES.profile]: {
+    title: "My Profile",
+    subtitle: "Update your account details and password",
+  },
 };
 
 export default function OwnerLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const meta = Object.entries(pageMeta).find(([path]) =>
     location.pathname.startsWith(path),
   )?.[1] ?? { title: "Owner Panel", subtitle: "" };
 
+  const handleLogout = () => {
+    dispatch(logout());
+    dispatch(showToast({ message: "Logged out successfully.", type: "info" }));
+    navigate("/login");
+  };
+
+  const isProfilePage = location.pathname.startsWith(OWNER_ROUTES.profile);
+
   return (
-    <div className="flex min-h-screen bg-bg-page">
+    <div className="flex h-screen overflow-hidden bg-bg-page">
       <Sidebar
         title="Hostel Booking"
         subtitle="Owner Panel"
-        navItems={ownerNav}
-        ctaLabel="+ New Hostel"
-        ctaPath={OWNER_ROUTES.hostelNew}
+        navItems={isProfilePage ? [...ownerNav, profileNavItem] : ownerNav}
+        ctaLabel={isProfilePage ? undefined : "+ New Hostel"}
+        ctaPath={isProfilePage ? undefined : OWNER_ROUTES.hostelNew}
+        profilePath={isProfilePage ? undefined : OWNER_ROUTES.profile}
+        showLogout={isProfilePage}
+        onLogout={handleLogout}
       />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Topbar title={meta.title} subtitle={meta.subtitle} />
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <Topbar
+          title={meta.title}
+          subtitle={meta.subtitle}
+          onLogout={isProfilePage ? undefined : handleLogout}
+        />
+        <main className="min-h-0 flex-1 overflow-y-auto p-6 lg:p-8">
           {children}
         </main>
       </div>

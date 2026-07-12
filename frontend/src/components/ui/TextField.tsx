@@ -10,6 +10,10 @@ interface TextFieldProps<T extends FieldValues> {
   required?: boolean;
   helperText?: string;
   disabled?: boolean;
+  min?: string;
+  max?: string;
+  step?: string | number;
+  integerOnly?: boolean;
 }
 
 export default function TextField<T extends FieldValues>({
@@ -21,6 +25,10 @@ export default function TextField<T extends FieldValues>({
   required,
   helperText,
   disabled,
+  min,
+  max,
+  step,
+  integerOnly,
 }: TextFieldProps<T>) {
   return (
     <Controller
@@ -38,6 +46,33 @@ export default function TextField<T extends FieldValues>({
             placeholder={placeholder}
             disabled={disabled}
             error={!!fieldState.error}
+            min={min}
+            max={max}
+            step={integerOnly ? 1 : step}
+            value={field.value ?? ""}
+            onKeyDown={
+              integerOnly
+                ? (e) => {
+                    if ([".", "e", "E", "+", "-"].includes(e.key)) {
+                      e.preventDefault();
+                    }
+                  }
+                : undefined
+            }
+            onChange={(e) => {
+              const raw = e.target.value;
+              if (type === "number" || integerOnly) {
+                if (raw === "") {
+                  field.onChange("");
+                  return;
+                }
+                const num = Number(raw);
+                if (Number.isNaN(num)) return;
+                field.onChange(integerOnly ? Math.trunc(num) : num);
+                return;
+              }
+              field.onChange(raw);
+            }}
           />
           {fieldState.error ? (
             <p className="text-xs text-red-500">{fieldState.error.message}</p>

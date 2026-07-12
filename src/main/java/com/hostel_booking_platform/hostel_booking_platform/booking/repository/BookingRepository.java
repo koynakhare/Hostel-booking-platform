@@ -17,6 +17,15 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
   Page<Booking> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
+  @Query("""
+      SELECT b FROM Booking b
+      WHERE b.room.hostel.owner.id = :ownerId
+      ORDER BY b.createdAt DESC
+      """)
+  Page<Booking> findByOwnerIdOrderByCreatedAtDesc(
+      @Param("ownerId") Long ownerId,
+      Pageable pageable);
+
   List<Booking> findByRoomId(Long roomId);
 
   @Query("""

@@ -9,6 +9,7 @@ import { STUDENT_ROUTES } from "@/utils/constants";
 const navLinks = [
   { path: STUDENT_ROUTES.browse, label: "Home", end: true },
   { path: STUDENT_ROUTES.myBookings, label: "My Bookings", end: true },
+  { path: STUDENT_ROUTES.profile, label: "Profile", end: true },
 ];
 
 export default function StudentNavbar() {
@@ -56,10 +57,13 @@ export default function StudentNavbar() {
 
         <div className="hidden items-center gap-3 md:flex">
           {user && (
-            <div className="text-right">
+            <Link
+              to={STUDENT_ROUTES.profile}
+              className="text-right transition-colors hover:text-accent"
+            >
               <p className="text-sm font-medium text-text-primary">{user.fullName}</p>
               <p className="text-xs text-text-muted">{user.email}</p>
-            </div>
+            </Link>
           )}
           <Button variant="ghost" size="sm" onClick={handleLogout}>
             Logout
@@ -103,8 +107,14 @@ export default function StudentNavbar() {
           </nav>
           {user && (
             <div className="mt-4 border-t border-border-subtle pt-4">
-              <p className="text-sm font-medium text-text-primary">{user.fullName}</p>
-              <p className="text-xs text-text-muted">{user.email}</p>
+              <Link
+                to={STUDENT_ROUTES.profile}
+                onClick={() => setMenuOpen(false)}
+                className="block"
+              >
+                <p className="text-sm font-medium text-text-primary">{user.fullName}</p>
+                <p className="text-xs text-text-muted">{user.email}</p>
+              </Link>
               <Button variant="ghost" size="sm" className="mt-3 w-full" onClick={handleLogout}>
                 Logout
               </Button>

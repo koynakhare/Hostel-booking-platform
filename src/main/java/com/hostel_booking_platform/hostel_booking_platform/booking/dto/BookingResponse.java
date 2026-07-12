@@ -18,6 +18,7 @@ public class BookingResponse {
   private String hostelName;
   private Long userId;
   private String userEmail;
+  private String userFullName;
   private LocalDate checkIn;
   private LocalDate checkOut;
   private BookingStatus status;
@@ -40,6 +41,7 @@ public class BookingResponse {
     response.setHostelName(booking.getRoom().getHostel().getName());
     response.setUserId(booking.getUser().getId());
     response.setUserEmail(booking.getUser().getEmail());
+    response.setUserFullName(booking.getUser().getFullName());
     response.setCheckIn(booking.getCheckIn());
     response.setCheckOut(booking.getCheckOut());
     response.setStatus(booking.getStatus());
@@ -104,6 +106,14 @@ public class BookingResponse {
 
   public void setUserEmail(String userEmail) {
     this.userEmail = userEmail;
+  }
+
+  public String getUserFullName() {
+    return userFullName;
+  }
+
+  public void setUserFullName(String userFullName) {
+    this.userFullName = userFullName;
   }
 
   public LocalDate getCheckIn() {

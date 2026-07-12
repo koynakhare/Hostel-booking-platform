@@ -3,6 +3,7 @@ package com.hostel_booking_platform.hostel_booking_platform.auth.controller;
 import com.hostel_booking_platform.hostel_booking_platform.auth.dto.AuthResponse;
 import com.hostel_booking_platform.hostel_booking_platform.auth.dto.LoginRequest;
 import com.hostel_booking_platform.hostel_booking_platform.auth.dto.RegisterRequest;
+import com.hostel_booking_platform.hostel_booking_platform.auth.dto.UpdateProfileRequest;
 import com.hostel_booking_platform.hostel_booking_platform.auth.service.AuthService;
 import com.hostel_booking_platform.hostel_booking_platform.security.JwtService;
 import com.hostel_booking_platform.hostel_booking_platform.user.entity.User;
@@ -61,4 +62,12 @@ public ResponseEntity<UserResponse> getLoggedInUser(@AuthenticationPrincipal Use
     UserResponse response = authService.getLoggedInUser(userDetails.getUsername());
     return ResponseEntity.ok(response);
 }
+
+    @PutMapping("/profile")
+    public ResponseEntity<UserResponse> updateProfile(
+            @Valid @RequestBody UpdateProfileRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        UserResponse response = authService.updateProfile(userDetails.getUsername(), request);
+        return ResponseEntity.ok(response);
+    }
 }

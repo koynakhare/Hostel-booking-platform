@@ -51,6 +51,15 @@ public class BookingController {
     return ResponseEntity.ok(bookingService.getMyBookings(userDetails.getUsername(), page, limit));
   }
 
+  @GetMapping("/owner")
+  public ResponseEntity<PagedResponse<BookingResponse>> getOwnerBookings(
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer limit,
+      @AuthenticationPrincipal UserDetails userDetails) {
+
+    return ResponseEntity.ok(bookingService.getOwnerBookings(userDetails.getUsername(), page, limit));
+  }
+
   @GetMapping("/{bookingId}")
   public ResponseEntity<BookingResponse> getBooking(
       @PathVariable Long bookingId,

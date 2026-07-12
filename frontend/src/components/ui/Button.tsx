@@ -37,7 +37,7 @@ export default function Button({
     <button
       type="button"
       disabled={disabled || loading}
-      className={`inline-flex items-center justify-center gap-2 rounded-button font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-button font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       {...props}
     >
       {loading && (

@@ -2,6 +2,7 @@ package com.hostel_booking_platform.hostel_booking_platform.auth.service;
 
 import com.hostel_booking_platform.hostel_booking_platform.auth.dto.LoginRequest;
 import com.hostel_booking_platform.hostel_booking_platform.auth.dto.RegisterRequest;
+import com.hostel_booking_platform.hostel_booking_platform.auth.dto.UpdateProfileRequest;
 import com.hostel_booking_platform.hostel_booking_platform.user.dto.UserResponse;
 import com.hostel_booking_platform.hostel_booking_platform.user.entity.Role;
 import com.hostel_booking_platform.hostel_booking_platform.user.entity.User;
@@ -22,7 +23,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public User register(RegisterRequest request) {
-
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already registered");
         }
@@ -39,7 +39,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public User login(LoginRequest request) {
-
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
 
@@ -51,10 +50,32 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-public UserResponse getLoggedInUser(String email) {
-    User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    public UserResponse getLoggedInUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-    return UserResponse.fromEntity(user);
-}
+        return UserResponse.fromEntity(user);
+    }
+
+    @Override
+    public UserResponse updateProfile(String email, UpdateProfileRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        user.setFullName(request.getFullName().trim());
+        user.setPhoneNumber(request.getPhoneNumber().trim());
+
+        boolean hasNewPassword = request.getNewPassword() != null && !request.getNewPassword().isBlank();
+        if (hasNewPassword) {
+            if (request.getCurrentPassword() == null || request.getCurrentPassword().isBlank()) {
+                throw new IllegalArgumentException("Current password is required to set a new password");
+            }
+            if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                throw new IllegalArgumentException("Current password is incorrect");
+            }
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        }
+
+        return UserResponse.fromEntity(userRepository.save(user));
+    }
 }

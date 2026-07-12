@@ -1,9 +1,8 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
 import Button from "@/components/ui/Button";
-import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import { logout, selectUser } from "@/features/auth/authSlice";
-import { showToast } from "@/features/toast/toastSlice";
+import { useAppSelector } from "@/app/hooks";
+import { selectUser } from "@/features/auth/authSlice";
 
 export interface NavItem {
   path: string;
@@ -17,6 +16,9 @@ interface SidebarProps {
   navItems: NavItem[];
   ctaLabel?: string;
   ctaPath?: string;
+  profilePath?: string;
+  showLogout?: boolean;
+  onLogout?: () => void;
 }
 
 export default function Sidebar({
@@ -25,19 +27,15 @@ export default function Sidebar({
   navItems,
   ctaLabel,
   ctaPath,
+  profilePath,
+  showLogout,
+  onLogout,
 }: SidebarProps) {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    dispatch(showToast({ message: "Logged out successfully.", type: "info" }));
-    navigate("/login");
-  };
-
   return (
-    <aside className="flex w-60 shrink-0 flex-col bg-sidebar-bg">
+    <aside className="flex h-screen w-60 shrink-0 flex-col overflow-hidden bg-sidebar-bg">
       <div className="border-b border-white/10 px-5 py-6">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/20">
@@ -57,12 +55,15 @@ export default function Sidebar({
           <NavLink
             key={item.path}
             to={item.path}
-            end={item.path.endsWith("/dashboard") || item.path.endsWith("/hostels")}
+            end={
+              item.path.endsWith("/dashboard")
+              || item.path.endsWith("/hostels")
+              || item.path.endsWith("/profile")
+            }
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                isActive
-                  ? "sidebar-nav-active font-medium"
-                  : "text-text-on-dark-muted hover:bg-white/5 hover:text-text-on-dark"
+              `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${isActive
+                ? "sidebar-nav-active font-medium"
+                : "text-text-on-dark-muted hover:bg-white/5 hover:text-text-on-dark"
               }`
             }
           >
@@ -75,18 +76,48 @@ export default function Sidebar({
       <div className="space-y-3 border-t border-white/10 p-4">
         {user && (
           <div className="px-1">
-            <p className="truncate text-xs font-medium text-text-on-dark">{user.fullName}</p>
-            <p className="truncate text-xs text-text-on-dark-muted">{user.email}</p>
+            {profilePath ? (
+              <button
+                type="button"
+                onClick={() => navigate(profilePath)}
+                className="flex w-full items-start gap-2.5 rounded-lg px-1 py-1 text-left transition-colors hover:bg-white/5"
+              >
+                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-text-on-dark-muted">
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </span>
+                <span className="min-w-0">
+                  <p className="truncate text-xs font-medium text-text-on-dark hover:text-accent">
+                    {user.fullName}
+                  </p>
+                  <p className="truncate text-xs text-text-on-dark-muted hover:text-accent/80">
+                    {user.email}
+                  </p>
+                </span>
+              </button>
+            ) : (
+              <>
+                <p className="truncate text-xs font-medium text-text-on-dark">{user.fullName}</p>
+                <p className="truncate text-xs text-text-on-dark-muted">{user.email}</p>
+              </>
+            )}
           </div>
         )}
         {ctaLabel && ctaPath && (
-          <Button className="w-full" onClick={() => navigate(ctaPath)}>
+          <Button className="w-full cursor-pointer" onClick={() => navigate(ctaPath)}>
             {ctaLabel}
           </Button>
         )}
-        <Button variant="ghost" className="w-full !text-text-on-dark-muted hover:!text-text-on-dark" onClick={handleLogout}>
-          Logout
-        </Button>
+        {onLogout && (
+          <Button
+            variant="ghost"
+            className="w-full !bg-white !text-black hover:!bg-white/90 cursor-pointer"
+            onClick={onLogout}
+          >
+            Logout
+          </Button>
+        )}
       </div>
     </aside>
   );

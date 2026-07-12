@@ -8,9 +8,13 @@ const pageMeta: Record<string, { title: string; subtitle?: string }> = {
     title: "My Bookings",
     subtitle: "View your upcoming and past hostel bookings",
   },
+  [STUDENT_ROUTES.profile]: {
+    title: "My Profile",
+    subtitle: "Update your account details and password",
+  },
 };
 
-const compactHeaderRoutes = [STUDENT_ROUTES.myBookings];
+const compactHeaderRoutes = [STUDENT_ROUTES.myBookings, STUDENT_ROUTES.profile];
 
 function isBrowsePage(pathname: string) {
   return pathname === STUDENT_ROUTES.browse || pathname === STUDENT_ROUTES.browse + "/";

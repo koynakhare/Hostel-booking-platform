@@ -59,6 +59,7 @@ export const OWNER_ROUTES = {
   rooms: "/owner/hostels/:hostelId/rooms",
   bookings: "/owner/bookings",
   payments: "/owner/payments",
+  profile: "/owner/profile",
 } as const;
 
 export const STUDENT_ROUTES = {
@@ -67,4 +68,5 @@ export const STUDENT_ROUTES = {
   checkout: "/student/checkout/:hostelId",
   myBookings: "/student/bookings",
   paymentSuccess: "/student/payment/success",
+  profile: "/student/profile",
 } as const;
