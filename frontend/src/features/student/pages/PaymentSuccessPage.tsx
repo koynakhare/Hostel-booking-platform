@@ -27,22 +27,29 @@ export default function PaymentSuccessPage() {
 
   if (!sessionId || !bookingId) {
     return (
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <Card>
         <p className="text-sm text-text-muted">Invalid payment return URL.</p>
         <Button className="mt-4" onClick={() => navigate(STUDENT_ROUTES.myBookings)}>
           Go to My Bookings
         </Button>
       </Card>
+      </div>
     );
   }
 
   if (isLoading) {
-    return <Loader label="Confirming your payment..." />;
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <Loader label="Confirming your payment..." />
+      </div>
+    );
   }
 
   if (isSuccess) {
     return (
-      <Card accentTop className="max-w-md mx-auto text-center">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <Card accentTop className="mx-auto max-w-md text-center">
         <h2 className="text-lg font-bold text-text-primary">Payment Successful</h2>
         <p className="mt-2 text-sm text-text-muted">
           Your booking has been confirmed. You can view it in My Bookings.
@@ -51,12 +58,14 @@ export default function PaymentSuccessPage() {
           View My Bookings
         </Button>
       </Card>
+      </div>
     );
   }
 
   if (isError) {
     return (
-      <Card className="max-w-md mx-auto text-center">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <Card className="mx-auto max-w-md text-center">
         <h2 className="text-lg font-bold text-text-primary">Payment Verification Failed</h2>
         <p className="mt-2 text-sm text-text-muted">
           We could not confirm your payment. If money was deducted, contact support with your booking ID.
@@ -65,8 +74,13 @@ export default function PaymentSuccessPage() {
           Go to My Bookings
         </Button>
       </Card>
+      </div>
     );
   }
 
-  return <Loader label="Processing..." />;
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <Loader label="Processing..." />
+    </div>
+  );
 }

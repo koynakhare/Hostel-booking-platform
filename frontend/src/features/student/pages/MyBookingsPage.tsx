@@ -1,29 +1,30 @@
 import { useState } from "react";
 import { useGetMyBookingsQuery, useCancelBookingMutation } from "@/api/bookingApi";
-import { useOnlinePayment } from "@/features/student/hooks/useOnlinePayment";
+import PayBookingModal from "@/features/student/components/PayBookingModal";
 import Table, { type Column } from "@/components/ui/Table";
 import Badge, { statusToBadgeVariant } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { formatCurrency, formatDate } from "@/utils/formatters";
-import { PAYMENT_METHODS } from "@/utils/constants";
+import {
+  PAYMENT_METHOD_SHORT,
+  canCompletePayment,
+  paymentStatusLabel,
+  paymentStatusVariant,
+} from "@/utils/paymentLabels";
 import type { Booking } from "@/types/booking";
 
-export default function MyBookingsPage() {
-  const { data: bookings = [], isLoading } = useGetMyBookingsQuery();
-  const [cancelBooking, { isLoading: cancelling }] = useCancelBookingMutation();
-  const { payForBooking, isPaying } = useOnlinePayment();
-  const [cancelId, setCancelId] = useState<number | null>(null);
-  const [payingId, setPayingId] = useState<number | null>(null);
+const PAGE_SIZE = 5;
 
-  const handlePay = async (booking: Booking) => {
-    setPayingId(booking.id);
-    try {
-      await payForBooking(booking.id, booking.paymentMethod, booking.hostelName);
-    } catch { /* handled */ } finally {
-      setPayingId(null);
-    }
-  };
+export default function MyBookingsPage() {
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useGetMyBookingsQuery({ page, limit: PAGE_SIZE });
+  const [cancelBooking, { isLoading: cancelling }] = useCancelBookingMutation();
+  const [cancelId, setCancelId] = useState<number | null>(null);
+  const [payBooking, setPayBooking] = useState<Booking | null>(null);
+
+  const bookings = data?.content ?? [];
+  const totalPages = data?.totalPages ?? 1;
 
   const columns: Column<Booking>[] = [
     { key: "hostelName", label: "Hostel" },
@@ -44,6 +45,23 @@ export default function MyBookingsPage() {
       render: (r) => <Badge label={r.status} variant={statusToBadgeVariant(r.status)} />,
     },
     {
+      key: "paymentMethod",
+      label: "Payment",
+      render: (r) => (
+        <span className="text-sm text-text-primary">{PAYMENT_METHOD_SHORT[r.paymentMethod]}</span>
+      ),
+    },
+    {
+      key: "paymentStatus",
+      label: "Payment Status",
+      render: (r) => (
+        <Badge
+          label={paymentStatusLabel(r.paymentStatus, r.paymentMethod, r.status)}
+          variant={paymentStatusVariant(r.paymentStatus, r.paymentMethod, r.status)}
+        />
+      ),
+    },
+    {
       key: "totalAmount",
       label: "Amount",
       render: (r) => formatCurrency(r.totalAmount),
@@ -51,30 +69,20 @@ export default function MyBookingsPage() {
     {
       key: "id",
       label: "Actions",
-      render: (r) => {
-        const canPay =
-          r.status === "PENDING"
-          && (r.paymentMethod === PAYMENT_METHODS.RAZORPAY || r.paymentMethod === PAYMENT_METHODS.STRIPE);
-
-        return (
-          <div className="flex gap-2">
-            {canPay && (
-              <Button
-                size="sm"
-                loading={isPaying && payingId === r.id}
-                onClick={() => handlePay(r)}
-              >
-                Pay Now
-              </Button>
-            )}
-            {r.status !== "CANCELLED" && (
-              <Button size="sm" variant="danger" onClick={() => setCancelId(r.id)}>
-                Cancel
-              </Button>
-            )}
-          </div>
-        );
-      },
+      render: (r) => (
+        <div className="flex flex-wrap gap-1.5">
+          {canCompletePayment(r) && (
+            <Button size="sm" onClick={() => setPayBooking(r)}>
+              Pay
+            </Button>
+          )}
+          {r.status !== "CANCELLED" && (
+            <Button size="sm" variant="danger" onClick={() => setCancelId(r.id)}>
+              Cancel
+            </Button>
+          )}
+        </div>
+      ),
     },
   ];
 
@@ -87,12 +95,23 @@ export default function MyBookingsPage() {
   };
 
   return (
-    <div>
+    <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
       <Table
         columns={columns}
         data={bookings}
         loading={isLoading}
+        dense
         emptyMessage="No bookings yet. Browse hostels to book your first room!"
+        pagination={{
+          page,
+          totalPages,
+          onPageChange: setPage,
+        }}
+      />
+      <PayBookingModal
+        booking={payBooking}
+        open={payBooking !== null}
+        onClose={() => setPayBooking(null)}
       />
       <ConfirmDialog
         open={cancelId !== null}

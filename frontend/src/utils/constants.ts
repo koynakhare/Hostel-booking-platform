@@ -35,6 +35,13 @@ export const PAYMENT_METHODS = {
   CASH_ON_ARRIVAL: "CASH_ON_ARRIVAL",
 } as const;
 
+export const PAYMENT_STATUS = {
+  PENDING: "PENDING",
+  SUCCESS: "SUCCESS",
+  FAILED: "FAILED",
+  REFUNDED: "REFUNDED",
+} as const;
+
 export const ROOM_TYPES = [
   "STANDARD",
   "WINDOW",

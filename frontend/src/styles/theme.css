@@ -110,6 +110,16 @@
     border-top: 3px solid var(--color-accent);
   }
 
+  .storefront-hero {
+    background: linear-gradient(
+      135deg,
+      rgba(20, 184, 166, 0.08) 0%,
+      var(--color-bg-page) 50%,
+      rgba(20, 184, 166, 0.04) 100%
+    );
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
   .skeleton-block {
     background-color: var(--color-skeleton);
     border-radius: 6px;

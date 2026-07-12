@@ -25,6 +25,9 @@ export function statusToBadgeVariant(
     CANCELLED: "neutral",
     EXPIRED: "neutral",
     UNAVAILABLE: "neutral",
+    REFUNDED: "neutral",
+    SUCCESS: "success",
+    FAILED: "danger",
   };
   return map[status] ?? "neutral";
 }

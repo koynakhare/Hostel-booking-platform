@@ -20,6 +20,7 @@ interface TableProps<T> {
   emptyMessage?: string;
   onRowClick?: (row: T) => void;
   pagination?: Pagination;
+  dense?: boolean;
 }
 
 export default function Table<T extends { id?: number | string }>({
@@ -29,7 +30,9 @@ export default function Table<T extends { id?: number | string }>({
   emptyMessage = "No data found.",
   onRowClick,
   pagination,
+  dense = false,
 }: TableProps<T>) {
+  const cellPad = dense ? "px-3 py-2" : "px-4 py-3";
   if (loading) {
     return (
       <div className="card-base overflow-hidden">
@@ -59,7 +62,7 @@ export default function Table<T extends { id?: number | string }>({
               {columns.map((col) => (
                 <th
                   key={String(col.key)}
-                  className="px-4 py-3 font-semibold text-text-muted"
+                  className={`${cellPad} font-semibold text-text-muted`}
                 >
                   {col.label}
                 </th>
@@ -76,7 +79,7 @@ export default function Table<T extends { id?: number | string }>({
                 }`}
               >
                 {columns.map((col) => (
-                  <td key={String(col.key)} className="px-4 py-3 text-text-primary">
+                  <td key={String(col.key)} className={`${cellPad} text-text-primary`}>
                     {col.render
                       ? col.render(row)
                       : String((row as Record<string, unknown>)[col.key as string] ?? "—")}
@@ -87,10 +90,10 @@ export default function Table<T extends { id?: number | string }>({
           </tbody>
         </table>
       </div>
-      {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-border-subtle px-4 py-3">
+      {pagination && (
+        <div className="flex items-center justify-between border-t border-border-subtle px-3 py-2">
           <span className="text-xs text-text-muted">
-            Page {pagination.page} of {pagination.totalPages}
+            Page {pagination.page} of {Math.max(pagination.totalPages, 1)}
           </span>
           <div className="flex gap-2">
             <Button

@@ -4,6 +4,7 @@ import com.hostel_booking_platform.hostel_booking_platform.booking.dto.BookingRe
 import com.hostel_booking_platform.hostel_booking_platform.booking.dto.CreateBookingRequest;
 import com.hostel_booking_platform.hostel_booking_platform.booking.dto.LockRoomRequest;
 import com.hostel_booking_platform.hostel_booking_platform.booking.dto.LockRoomResponse;
+import com.hostel_booking_platform.hostel_booking_platform.booking.dto.UpdatePaymentMethodRequest;
 import com.hostel_booking_platform.hostel_booking_platform.booking.entity.Booking;
 import com.hostel_booking_platform.hostel_booking_platform.booking.entity.Payment;
 import com.hostel_booking_platform.hostel_booking_platform.booking.entity.RoomLock;
@@ -17,11 +18,15 @@ import com.hostel_booking_platform.hostel_booking_platform.booking.util.Availabi
 import com.hostel_booking_platform.hostel_booking_platform.booking.util.AvailabilityUtil.DateRangeSeats;
 import com.hostel_booking_platform.hostel_booking_platform.booking.util.PricingUtil;
 import com.hostel_booking_platform.hostel_booking_platform.booking.util.SeatCountUtil;
+import com.hostel_booking_platform.hostel_booking_platform.hostel.dto.PagedResponse;
 import com.hostel_booking_platform.hostel_booking_platform.room.entity.Room;
 import com.hostel_booking_platform.hostel_booking_platform.room.repository.RoomRepository;
 import com.hostel_booking_platform.hostel_booking_platform.user.entity.Role;
 import com.hostel_booking_platform.hostel_booking_platform.user.entity.User;
 import com.hostel_booking_platform.hostel_booking_platform.user.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -142,7 +147,7 @@ public class BookingServiceImpl implements BookingService {
       bookingRepository.save(savedBooking);
     }
 
-    BookingResponse response = BookingResponse.fromEntity(savedBooking);
+    BookingResponse response = toResponse(savedBooking);
     response.setGatewayOrderId(savedPayment.getGatewayOrderId());
     return response;
   }
@@ -158,18 +163,87 @@ public class BookingServiceImpl implements BookingService {
       throw new IllegalArgumentException("You are not allowed to view this booking");
     }
 
-    return BookingResponse.fromEntity(booking);
+    return toResponse(booking);
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<BookingResponse> getMyBookings(String userEmail) {
+    return getMyBookings(userEmail, null, null).getContent();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public PagedResponse<BookingResponse> getMyBookings(String userEmail, Integer page, Integer limit) {
     User user = getUserOrThrow(userEmail);
 
-    return bookingRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
-        .stream()
-        .map(BookingResponse::fromEntity)
+    boolean unpaged = page == null && limit == null;
+    Pageable pageable = unpaged
+        ? Pageable.unpaged()
+        : PageRequest.of(
+            (page == null || page < 1) ? 0 : page - 1,
+            (limit == null || limit < 1) ? 10 : limit);
+
+    Page<Booking> bookingPage = bookingRepository.findByUserIdOrderByCreatedAtDesc(user.getId(), pageable);
+
+    List<BookingResponse> content = bookingPage.getContent().stream()
+        .map(this::toResponse)
         .collect(Collectors.toList());
+
+    Integer responsePage = unpaged ? null : ((page == null || page < 1) ? 1 : page);
+    Integer responseLimit = unpaged ? null : ((limit == null || limit < 1) ? 10 : limit);
+
+    return new PagedResponse<>(
+        content,
+        responsePage,
+        responseLimit,
+        bookingPage.getTotalElements(),
+        bookingPage.getTotalPages());
+  }
+
+  @Override
+  @Transactional
+  public BookingResponse updatePaymentMethod(
+      Long bookingId, UpdatePaymentMethodRequest request, String userEmail) {
+    User user = getUserOrThrow(userEmail);
+    Booking booking = bookingRepository.findById(bookingId)
+        .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+
+    if (!booking.getUser().getId().equals(user.getId())) {
+      throw new IllegalArgumentException("You are not allowed to update this booking");
+    }
+
+    if (booking.getStatus() == BookingStatus.CANCELLED
+        || booking.getStatus() == BookingStatus.EXPIRED) {
+      throw new IllegalArgumentException("Cannot update payment for a cancelled booking");
+    }
+
+    Payment payment = paymentRepository.findByBookingIdOrderByCreatedAtDesc(bookingId)
+        .stream()
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("No payment record found for this booking"));
+
+    if (payment.getStatus() == PaymentStatus.SUCCESS) {
+      throw new IllegalArgumentException("Payment is already completed");
+    }
+
+    PaymentMethod newMethod = request.getPaymentMethod();
+    booking.setPaymentMethod(newMethod);
+    payment.setPaymentMethod(newMethod);
+    payment.setGatewayOrderId(null);
+    payment.setGatewayPaymentId(null);
+    payment.setStatus(PaymentStatus.PENDING);
+
+    if (newMethod == PaymentMethod.CASH_ON_ARRIVAL) {
+      booking.setStatus(BookingStatus.CONFIRMED);
+    } else if (booking.getStatus() == BookingStatus.CONFIRMED) {
+      booking.setStatus(BookingStatus.PENDING);
+    }
+
+    bookingRepository.save(booking);
+    paymentRepository.save(payment);
+
+    return toResponse(booking);
   }
 
   @Override
@@ -200,6 +274,18 @@ public class BookingServiceImpl implements BookingService {
           }
           paymentRepository.save(payment);
         });
+  }
+
+  private BookingResponse toResponse(Booking booking) {
+    BookingResponse response = BookingResponse.fromEntity(booking);
+    paymentRepository.findByBookingIdOrderByCreatedAtDesc(booking.getId())
+        .stream()
+        .findFirst()
+        .ifPresent(payment -> {
+          response.setPaymentStatus(payment.getStatus());
+          response.setGatewayOrderId(payment.getGatewayOrderId());
+        });
+    return response;
   }
 
   private User getStudentOrThrow(String userEmail) {

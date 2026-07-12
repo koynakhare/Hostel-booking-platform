@@ -5,7 +5,14 @@ import type {
   CreateBookingRequest,
   LockRoomRequest,
   LockRoomResponse,
+  PaymentMethod,
 } from "@/types/booking";
+import type { PagedResponse } from "@/types/hostel";
+
+interface MyBookingsParams {
+  page?: number;
+  limit?: number;
+}
 
 const roomAvailabilityTags = [{ type: "Room" as const }];
 
@@ -41,8 +48,11 @@ export const bookingApi = baseApi.injectEndpoints({
         } catch { /* handled */ }
       },
     }),
-    getMyBookings: builder.query<Booking[], void>({
-      query: () => "/bookings/my",
+    getMyBookings: builder.query<PagedResponse<Booking>, MyBookingsParams | void>({
+      query: (params) => ({
+        url: "/bookings/my",
+        params: params ?? {},
+      }),
       providesTags: ["Booking"],
     }),
     getBooking: builder.query<Booking, number>({
@@ -59,6 +69,20 @@ export const bookingApi = baseApi.injectEndpoints({
         } catch { /* handled */ }
       },
     }),
+    updatePaymentMethod: builder.mutation<Booking, { id: number; paymentMethod: PaymentMethod }>({
+      query: ({ id, paymentMethod }) => ({
+        url: `/bookings/${id}/payment-method`,
+        method: "PATCH",
+        body: { paymentMethod },
+      }),
+      invalidatesTags: ["Booking"],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(showToast({ message: "Payment method updated.", type: "success" }));
+        } catch { /* handled */ }
+      },
+    }),
   }),
 });
 
@@ -68,4 +92,5 @@ export const {
   useGetMyBookingsQuery,
   useGetBookingQuery,
   useCancelBookingMutation,
+  useUpdatePaymentMethodMutation,
 } = bookingApi;

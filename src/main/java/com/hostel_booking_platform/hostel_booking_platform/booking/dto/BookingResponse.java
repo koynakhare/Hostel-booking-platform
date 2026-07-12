@@ -3,6 +3,7 @@ package com.hostel_booking_platform.hostel_booking_platform.booking.dto;
 import com.hostel_booking_platform.hostel_booking_platform.booking.entity.Booking;
 import com.hostel_booking_platform.hostel_booking_platform.booking.enums.BookingStatus;
 import com.hostel_booking_platform.hostel_booking_platform.booking.enums.PaymentMethod;
+import com.hostel_booking_platform.hostel_booking_platform.booking.enums.PaymentStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,6 +22,7 @@ public class BookingResponse {
   private LocalDate checkOut;
   private BookingStatus status;
   private PaymentMethod paymentMethod;
+  private PaymentStatus paymentStatus;
   private BigDecimal totalAmount;
   private String gatewayOrderId;
   private LocalDateTime createdAt;
@@ -134,6 +136,14 @@ public class BookingResponse {
 
   public void setPaymentMethod(PaymentMethod paymentMethod) {
     this.paymentMethod = paymentMethod;
+  }
+
+  public PaymentStatus getPaymentStatus() {
+    return paymentStatus;
+  }
+
+  public void setPaymentStatus(PaymentStatus paymentStatus) {
+    this.paymentStatus = paymentStatus;
   }
 
   public BigDecimal getTotalAmount() {

@@ -4,6 +4,9 @@ import com.hostel_booking_platform.hostel_booking_platform.booking.dto.BookingRe
 import com.hostel_booking_platform.hostel_booking_platform.booking.dto.CreateBookingRequest;
 import com.hostel_booking_platform.hostel_booking_platform.booking.dto.LockRoomRequest;
 import com.hostel_booking_platform.hostel_booking_platform.booking.dto.LockRoomResponse;
+import com.hostel_booking_platform.hostel_booking_platform.booking.dto.UpdatePaymentMethodRequest;
+
+import com.hostel_booking_platform.hostel_booking_platform.hostel.dto.PagedResponse;
 
 import java.util.List;
 
@@ -16,6 +19,10 @@ public interface BookingService {
   BookingResponse getBooking(Long bookingId, String userEmail);
 
   List<BookingResponse> getMyBookings(String userEmail);
+
+  PagedResponse<BookingResponse> getMyBookings(String userEmail, Integer page, Integer limit);
+
+  BookingResponse updatePaymentMethod(Long bookingId, UpdatePaymentMethodRequest request, String userEmail);
 
   void cancelBooking(Long bookingId, String userEmail);
 }

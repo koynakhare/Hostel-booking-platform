@@ -17,6 +17,7 @@ import Card from "@/components/ui/Card";
 import TextField from "@/components/ui/TextField";
 import Loader from "@/components/ui/Loader";
 import { PAYMENT_METHODS, STUDENT_ROUTES } from "@/utils/constants";
+import { PAYMENT_LABELS } from "@/utils/paymentLabels";
 import type { PaymentMethod } from "@/types/booking";
 import type { RoomSheetItem } from "@/types/room";
 
@@ -35,12 +36,6 @@ interface LocationState {
   checkOut: string;
   seatCount: number;
 }
-
-const PAYMENT_LABELS: Record<PaymentMethod, string> = {
-  RAZORPAY: "Razorpay (UPI / Card / Netbanking)",
-  STRIPE: "Stripe (Card)",
-  CASH_ON_ARRIVAL: "Cash on Arrival",
-};
 
 export default function BookingCheckoutPage() {
   const { hostelId } = useParams<{ hostelId: string }>();
@@ -86,12 +81,14 @@ export default function BookingCheckoutPage() {
 
   if (!state?.room) {
     return (
-      <Card>
-        <p className="text-sm text-text-muted">No room selected. Please go back and select a room.</p>
-        <Button className="mt-4" onClick={() => navigate(`/student/hostels/${hostelId}`)}>
-          Back to Hostel
-        </Button>
-      </Card>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <Card>
+          <p className="text-sm text-text-muted">No room selected. Please go back and select a room.</p>
+          <Button className="mt-4" onClick={() => navigate(`/student/hostels/${hostelId}`)}>
+            Back to Hostel
+          </Button>
+        </Card>
+      </div>
     );
   }
 
@@ -121,7 +118,7 @@ export default function BookingCheckoutPage() {
   };
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div className="mx-auto max-w-7xl grid grid-cols-1 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-2 lg:px-8">
       <Card accentTop>
         <h2 className="mb-4 text-lg font-bold text-text-primary">Confirm Booking</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

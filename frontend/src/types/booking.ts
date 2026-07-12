@@ -1,10 +1,13 @@
-import type { BOOKING_STATUS, PAYMENT_METHODS } from "@/utils/constants";
+import type { BOOKING_STATUS, PAYMENT_METHODS, PAYMENT_STATUS } from "@/utils/constants";
 
 export type BookingStatus =
   (typeof BOOKING_STATUS)[keyof typeof BOOKING_STATUS];
 
 export type PaymentMethod =
   (typeof PAYMENT_METHODS)[keyof typeof PAYMENT_METHODS];
+
+export type PaymentStatus =
+  (typeof PAYMENT_STATUS)[keyof typeof PAYMENT_STATUS];
 
 export interface LockRoomRequest {
   roomId: number;
@@ -41,6 +44,7 @@ export interface Booking {
   checkOut: string;
   status: BookingStatus;
   paymentMethod: PaymentMethod;
+  paymentStatus?: PaymentStatus;
   totalAmount: number;
   gatewayOrderId?: string;
   createdAt?: string;

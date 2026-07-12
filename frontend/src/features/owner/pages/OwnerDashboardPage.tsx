@@ -20,8 +20,9 @@ export default function OwnerDashboardPage() {
     [hostelsData, user?.id],
   );
 
-  const activeBookings = bookings?.filter((b) => b.status === "CONFIRMED" || b.status === "PENDING").length ?? 0;
-  const revenue = bookings?.reduce((sum, b) => sum + (b.status === "CONFIRMED" ? b.totalAmount : 0), 0) ?? 0;
+  const bookingList = bookings?.content ?? [];
+  const activeBookings = bookingList.filter((b) => b.status === "CONFIRMED" || b.status === "PENDING").length;
+  const revenue = bookingList.reduce((sum, b) => sum + (b.status === "CONFIRMED" ? b.totalAmount : 0), 0);
 
   const stats = [
     { label: "Total Hostels", value: isLoading ? "—" : String(myHostels.length) },
