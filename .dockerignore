@@ -1,0 +1,10 @@
+target/
+frontend/
+.git/
+.idea/
+.vscode/
+.env
+.env.*
+uploads/
+**/node_modules/
+**/*.iml
