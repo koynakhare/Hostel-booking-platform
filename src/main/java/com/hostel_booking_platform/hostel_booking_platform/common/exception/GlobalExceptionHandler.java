@@ -2,6 +2,7 @@ package com.hostel_booking_platform.hostel_booking_platform.common.exception;
 
 import org.springframework.dao.DataAccessException;
 import org.hibernate.LazyInitializationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -67,17 +68,25 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(NullPointerException.class)
-  public ResponseEntity<Map<String, Object>> handleNullPointer(NullPointerException ex) {
-    Map<String, Object> body = new HashMap<>();
-    body.put("timestamp", LocalDateTime.now());
-    body.put("status", HttpStatus.BAD_REQUEST.value());
-    body.put("error", "Bad Request");
-    body.put("message", "Invalid request data. Please check your form fields and image file.");
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
-  }
-
-
+public ResponseEntity<Map<String, Object>> handleNullPointer(NullPointerException ex) {
+  Map<String, Object> body = new HashMap<>();
+  body.put("timestamp", LocalDateTime.now());
+  body.put("status", HttpStatus.BAD_REQUEST.value());
+  body.put("error", "Bad Request");
+  body.put("message", "Invalid request data. Please check your form fields and image file.");
+  return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+}
   
+@ExceptionHandler(DataIntegrityViolationException.class)
+public ResponseEntity<Map<String, Object>> handleDataIntegrity(DataIntegrityViolationException ex) {
+  Map<String, Object> body = new HashMap<>();
+  body.put("timestamp", LocalDateTime.now());
+  body.put("status", HttpStatus.BAD_REQUEST.value());
+  body.put("error", "Bad Request");
+  body.put("message", "Cannot delete this hostel because related records still exist.");
+  return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+}
+
 @ExceptionHandler({LazyInitializationException.class, DataAccessException.class})
 public ResponseEntity<Map<String, Object>> handleDataAccess(Exception ex) {
     Map<String, Object> body = new HashMap<>();

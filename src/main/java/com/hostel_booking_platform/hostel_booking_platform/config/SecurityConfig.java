@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +26,11 @@ public class SecurityConfig {
     }
 
     @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/uploads/hostels/**");
+    }
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -32,11 +38,13 @@ public class SecurityConfig {
     @Bean
 		public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 				http
+								.cors(cors -> {})
 								.csrf(csrf -> csrf.disable())
 								.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 								.authorizeHttpRequests(auth -> auth
 												.requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
-												.requestMatchers("/api/hostels/**").permitAll()
+												.requestMatchers("/uploads/hostels/**").permitAll()
+												// .requestMatchers("/api/hostels/**").permitAll()
 												.anyRequest().authenticated())
 												.exceptionHandling(ex -> ex
 													.authenticationEntryPoint((request, response, authException) -> {

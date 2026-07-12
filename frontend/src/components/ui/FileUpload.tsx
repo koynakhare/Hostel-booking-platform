@@ -1,0 +1,95 @@
+import { useCallback, useState, type DragEvent } from "react";
+
+interface FileUploadProps {
+  files: File[];
+  onChange: (files: File[]) => void;
+  accept?: string;
+  maxFiles?: number;
+  label?: string;
+}
+
+export default function FileUpload({
+  files,
+  onChange,
+  accept = "image/*",
+  maxFiles = 5,
+  label = "Upload images",
+}: FileUploadProps) {
+  const [dragging, setDragging] = useState(false);
+
+  const addFiles = useCallback(
+    (incoming: FileList | null) => {
+      if (!incoming) return;
+      const newFiles = Array.from(incoming).slice(0, maxFiles - files.length);
+      onChange([...files, ...newFiles]);
+    },
+    [files, maxFiles, onChange],
+  );
+
+  const onDrop = (e: DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    addFiles(e.dataTransfer.files);
+  };
+
+  const removeFile = (index: number) => {
+    onChange(files.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm font-medium text-text-primary">{label}</p>
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={onDrop}
+        className={`flex flex-col items-center justify-center rounded-card border-2 border-dashed px-6 py-8 transition-colors ${
+          dragging
+            ? "border-accent bg-accent/5"
+            : "border-border-subtle bg-bg-page/50"
+        }`}
+      >
+        <svg className="mb-2 h-8 w-8 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <p className="text-sm text-text-muted">
+          Drag & drop images here, or{" "}
+          <label className="cursor-pointer font-medium text-accent hover:underline">
+            browse
+            <input
+              type="file"
+              accept={accept}
+              multiple
+              className="hidden"
+              onChange={(e) => addFiles(e.target.files)}
+            />
+          </label>
+        </p>
+        <p className="mt-1 text-xs text-text-muted">Max {maxFiles} files, 5MB each</p>
+      </div>
+      {files.length > 0 && (
+        <div className="flex flex-wrap gap-3">
+          {files.map((file, i) => (
+            <div key={i} className="group relative">
+              <img
+                src={URL.createObjectURL(file)}
+                alt={file.name}
+                className="h-20 w-20 rounded-lg object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => removeFile(i)}
+                className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

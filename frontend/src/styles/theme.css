@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+/* ── Design tokens (single source of truth) ── */
+:root {
+  --color-sidebar-bg: #0f1b2d;
+  --color-sidebar-active-bg: rgba(20, 184, 166, 0.12);
+  --color-accent: #14b8a6;
+  --color-accent-dark: #0d9488;
+  --color-accent-light: rgba(20, 184, 166, 0.15);
+  --color-bg-page: #eef1f6;
+  --color-card-bg: #ffffff;
+  --color-text-primary: #0f1b2d;
+  --color-text-muted: #64748b;
+  --color-text-on-dark: #ffffff;
+  --color-text-on-dark-muted: #94a3b8;
+  --color-border-subtle: #e2e8f0;
+  --color-skeleton: #e2e8f0;
+  --color-skeleton-shimmer: #f1f5f9;
+  --radius-card: 12px;
+  --radius-button: 8px;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --gradient-accent: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+  --sidebar-width: 240px;
+}
+
+/* ── Tailwind v4 theme extensions ── */
+@theme inline {
+  --color-sidebar-bg: var(--color-sidebar-bg);
+  --color-sidebar-active-bg: var(--color-sidebar-active-bg);
+  --color-accent: var(--color-accent);
+  --color-accent-dark: var(--color-accent-dark);
+  --color-accent-light: var(--color-accent-light);
+  --color-bg-page: var(--color-bg-page);
+  --color-card-bg: var(--color-card-bg);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-muted: var(--color-text-muted);
+  --color-text-on-dark: var(--color-text-on-dark);
+  --color-text-on-dark-muted: var(--color-text-on-dark-muted);
+  --color-border-subtle: var(--color-border-subtle);
+  --color-skeleton: var(--color-skeleton);
+  --color-skeleton-shimmer: var(--color-skeleton-shimmer);
+
+  --radius-card: var(--radius-card);
+  --radius-button: var(--radius-button);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--shadow-card-hover);
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ── Base resets ── */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-bg-page);
+    color: var(--color-text-primary);
+  }
+}
+
+/* ── Reusable utility classes ── */
+@layer utilities {
+  .btn-accent {
+    background: var(--gradient-accent);
+    color: var(--color-text-on-dark);
+    border-radius: var(--radius-button);
+    font-weight: 600;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+
+  .btn-accent:hover {
+    opacity: 0.92;
+  }
+
+  .btn-accent:active {
+    transform: scale(0.98);
+  }
+
+  .card-base {
+    background-color: var(--color-card-bg);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .sidebar-nav-active {
+    background-color: var(--color-sidebar-active-bg);
+    border-left: 3px solid var(--color-accent);
+    color: var(--color-text-on-dark);
+  }
+
+  .topbar-accent-line {
+    height: 3px;
+    background: var(--gradient-accent);
+  }
+
+  .card-accent-top {
+    border-top: 3px solid var(--color-accent);
+  }
+
+  .skeleton-block {
+    background-color: var(--color-skeleton);
+    border-radius: 6px;
+    animation: skeleton-pulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes skeleton-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
+}
